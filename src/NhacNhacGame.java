@@ -41,16 +41,75 @@ public class NhacNhacGame implements Game<NhacNhacState, NhacNhacAction, String>
 
     @Override
     public double getUtility(NhacNhacState state, String player) {
-        double result = state.getUtility();
+        final double WIN = 10000.0;
+        final double LOSS = -10000.0;
+        final double DRAW = 0.0;
+
+        double result = state.getUtility(); // Isso retorna 1.0 para X, 0.0 para O, 0.5 para empate
+
         if (result != -1) {
-            // Se o resultado é 1 (vitória de X) e o jogador é O, a utilidade para O é 0.
-            // Se o resultado é 0 (vitória de O) e o jogador é O, a utilidade para O é 1.
-            if (Objects.equals(player, NhacNhacState.O)) {
-                result = 1 - result;
+            if (player.equals(NhacNhacState.X)) {
+                if (result == 1.0) return WIN;
+                if (result == 0.0) return LOSS;
+            } else { // player is O
+                if (result == 0.0) return WIN;
+                if (result == 1.0) return LOSS;
             }
+            return DRAW;
         } else {
-            throw new IllegalArgumentException("State is not terminal.");
+            throw new IllegalArgumentException("O estado não é terminal.");
         }
-        return result;
+    }
+
+    public double getHeuristicValue(NhacNhacState state, String player) {
+        double score = 0;
+        String opponent = player.equals(NhacNhacState.X) ? NhacNhacState.O : NhacNhacState.X;
+
+        // Todas as 8 linhas possíveis de vitória
+        int[][] lines = {
+                {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, // Linhas
+                {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, // Colunas
+                {0, 4, 8}, {2, 4, 6}  // Diagonais
+        };
+
+        for (int[] line : lines) {
+            int playerCount = 0;
+            int opponentCount = 0;
+            double pieceSizeBonus = 0; // Bônus por peças maiores na linha
+
+            for (int pos : line) {
+                Piece p = state.getVisiblePiece(pos % 3, pos / 3);
+                if (p != null) {
+                    if (p.getPlayer().equals(player)) {
+                        playerCount++;
+                        if (p.getSize() == Piece.Size.LARGE) pieceSizeBonus += 0.3;
+                        if (p.getSize() == Piece.Size.MEDIUM) pieceSizeBonus += 0.2;
+                    } else if (p.getPlayer().equals(opponent)) {
+                        opponentCount++;
+                    }
+                }
+            }
+            score += evaluateLine(playerCount, opponentCount);
+        }
+        return score;
+    }
+
+    private double evaluateLine(int playerCount, int opponentCount) {
+//linha nao usada por ninguem nao tem valor
+        if (playerCount > 0 && opponentCount > 0) {
+            return 0;
+        }
+
+        if (playerCount == 3) return 100; // Vitória (já tratado pelo isTerminal, mas bom ter)
+        if (opponentCount == 3) return -100; // Derrota
+
+        // Oportunidades de vitória para a IA
+        if (playerCount == 2) return 100;  // Duas peças em linha é uma grande ameaça.
+        if (playerCount == 1) return 10;   // Uma peça em uma linha vazia.
+
+        // Ameaças do oponente que precisam ser bloqueadas
+        if (opponentCount == 2) return -500; // Prioridade MÁXIMA para bloquear o oponente
+        if (opponentCount == 1) return -1;   // Uma pequena ameaça.
+        return 0; // Linha neutra ou bloqueada
     }
 }
