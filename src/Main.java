@@ -13,10 +13,10 @@ public class Main {
 
 
         //cria a instancia com a heuristica
-        int searchDepth = 3;
-        MinimaxSearch<NhacNhacState, NhacNhacAction, String> minimax = MinimaxSearch.createFor(
+        int searchDepth = 5;
+        AlphaBetaSearch<NhacNhacState, NhacNhacAction, String> aiSearch = AlphaBetaSearch.createFor(
                 game,
-                (s, p) -> game.getHeuristicValue(s, p), // Usando uma expressão lambda para a nossa heurística
+                (s, p) -> game.getHeuristicValue(s, p), //expressão lambda para a
                 searchDepth
         );
 
@@ -36,7 +36,7 @@ public class Main {
                 // VEZ DA IA
                 System.out.println("IA (" + aiPlayer + ") está pensando...");
                 long startTime = System.currentTimeMillis();
-                action = minimax.makeDecision(state);
+                action = aiSearch.makeDecision(state);
                 long endTime = System.currentTimeMillis();
                 System.out.println("Pensou por " + (endTime - startTime) + " ms.");
                 System.out.println("IA escolheu a ação: " + action);
@@ -55,9 +55,9 @@ public class Main {
 
         double utility = state.getUtility();
         if (utility == 1.0) {
-            System.out.println("Jogador X venceu!");
+            System.out.println("Jogador 1 venceu!");
         } else if (utility == 0.0) {
-            System.out.println("Jogador O venceu!");
+            System.out.println("Jogador 2 venceu!");
         } else {
             System.out.println("O jogo terminou em empate!");
         }

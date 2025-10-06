@@ -100,7 +100,7 @@ public class NhacNhacGame implements Game<NhacNhacState, NhacNhacAction, String>
             return 0;
         }
 
-        if (playerCount == 3) return 100; // Vitória (já tratado pelo isTerminal, mas bom ter)
+        if (playerCount == 3) return 100; // Vitória
         if (opponentCount == 3) return -100; // Derrota
 
         // Oportunidades de vitória para a IA
